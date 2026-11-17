@@ -115,7 +115,7 @@ export default function GroceryView({
                   {isOn && <Check className="w-3.5 h-3.5 text-emerald-600" />}
                   {member.profile.name}
                   <span className="text-[10px] opacity-70">
-                    ({member.type === 'linked' ? 'свое меню' : 'общ. меню'})
+                    ({member.type === 'linked' && member.useMemberMeals ? 'свое меню' : 'общ. меню'})
                   </span>
                 </button>
               );
