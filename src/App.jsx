@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
+import { onAuthStateChanged, signInWithRedirect, getRedirectResult, signOut } from 'firebase/auth';
 import {
   doc,
   getDoc,
@@ -82,8 +82,12 @@ export default function App() {
     syncMenuFromSheet();
   }, [syncMenuFromSheet]);
 
-  // Авторизация Firebase
+  // Авторизация Firebase с обработкой возврата из Google Redirect
   useEffect(() => {
+    getRedirectResult(auth).catch((err) => {
+      console.error('Ошибка возврата авторизации Google:', err);
+    });
+
     const unsub = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setAuthLoading(false);
@@ -191,13 +195,22 @@ export default function App() {
           }
         },
         () => {
-          // Если член семьи отозвал разрешение на чтение — убираем из списка
           setLinkedMembers((prev) => prev.filter((item) => item.id !== memberUid));
         }
       )
     );
     return () => unsubs.forEach((u) => u());
   }, [user, userDoc?.linkedMemberIds]);
+
+  const handleLogin = async () => {
+    try {
+      setAuthLoading(true);
+      await signInWithRedirect(auth, googleProvider);
+    } catch (err) {
+      console.error('Ошибка запуска входа через Google:', err);
+      setAuthLoading(false);
+    }
+  };
 
   const saveUserPatch = async (patch) => {
     if (!user) return;
@@ -218,11 +231,9 @@ export default function App() {
       });
 
       if (approve) {
-        // Разрешаем пригласившему читать наш профиль и меню
         await updateDoc(doc(db, 'users', user.uid), {
           sharedWith: arrayUnion(inviteObj.fromUid)
         });
-        // Добавляем пригласившего в наш список подключенных, чтобы синхронизировать связь
         await updateDoc(doc(db, 'users', inviteObj.fromUid), {
           linkedMemberIds: arrayUnion(user.uid),
           activeMemberIds: arrayUnion(user.uid)
@@ -273,7 +284,7 @@ export default function App() {
             </p>
           </div>
           <button
-            onClick={() => signInWithPopup(auth, googleProvider)}
+            onClick={handleLogin}
             className="w-full py-3.5 px-4 rounded-2xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-sm flex items-center justify-center gap-2.5 shadow-xl transition active:scale-[0.99]"
           >
             <LogIn className="w-5 h-5 text-emerald-600" /> Войти через Google
