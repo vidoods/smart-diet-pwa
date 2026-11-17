@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { onAuthStateChanged, signInWithRedirect, getRedirectResult, signOut } from 'firebase/auth';
+import { onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, signOut } from 'firebase/auth';
 import {
   doc,
   getDoc,
@@ -218,14 +218,18 @@ export default function App() {
   }, [user, userDoc?.linkedMemberIds, userDoc?.memberSyncPrefs, userDoc?.selected]);
 
   const handleLogin = async () => {
-    try {
-      setAuthLoading(true);
+  try {
+    setAuthLoading(true);
+    await signInWithPopup(auth, googleProvider);
+  } catch (err) {
+    if (err?.code === 'auth/popup-blocked') {
       await signInWithRedirect(auth, googleProvider);
-    } catch (err) {
-      console.error('Ошибка запуска входа через Google:', err);
+    } else {
+      console.error('Ошибка входа через Google:', err);
       setAuthLoading(false);
     }
-  };
+  }
+};
 
   // Сохранение изменений в документе пользователя + автоматическая трансляция меню участникам с включённой синхронизацией
   const saveUserPatch = async (patch) => {
