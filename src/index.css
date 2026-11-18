@@ -39,7 +39,7 @@
   display: grid;
   grid-template-rows: 0fr;
   opacity: 0;
-  transition: grid-template-rows 0.3s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.24s ease;
+  transition: grid-template-rows 0.7s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.24s ease;
 }
 
 .accordion-grid.is-open {
@@ -78,7 +78,7 @@
 }
 
 .animate-accordion {
-  animation: accordionReveal 0.22s ease-out forwards;
+  animation: accordionReveal 0.7s ease-out forwards;
 }
 
 .animate-glow {
