@@ -100,7 +100,7 @@ export default function App() {
     syncMenuFromSheet();
   }, [syncMenuFromSheet]);
 
-  // Авторизация Firebase с обработкой возврата из Google Redirect (на случай резервного входа)
+  // Авторизация Firebase с обработкой возврата из Google Redirect
   useEffect(() => {
     getRedirectResult(auth).catch((err) => {
       console.error('Ошибка возврата авторизации Google:', err);
@@ -248,29 +248,45 @@ export default function App() {
     }
   };
 
-  // Сохранение изменений в документе пользователя + трансляция меню участникам с включённой синхронизацией
-const saveUserPatch = async (patch) => {
-  if (!user) return;
-  const userRef = doc(db, 'users', user.uid);
-  setUserDoc((prev) => ({ ...(prev || {}), ...patch }));
+  // Защищённое сохранение изменений + трансляция меню участникам с включённой синхронизацией
+  const saveUserPatch = async (patch) => {
+    if (!user) return;
+    const userRef = doc(db, 'users', user.uid);
+    const nextData = { ...(userDoc || {}), ...patch };
+    setUserDoc(nextData);
 
-  const snap = await getDoc(userRef);
-  if (snap.exists()) {
-    await updateDoc(userRef, patch);
-  } else {
-    await setDoc(userRef, {
-      selected: { breakfast: 1, secondBreakfast: 1, lunch: 1, dinner: 1 },
-      days: 3,
-      checkedItems: {},
-      manualMembers: [],
-      linkedMemberIds: [],
-      activeMemberIds: [],
-      memberSyncPrefs: {},
-      sharedWith: [],
-      ...patch
-    });
-  }
-};
+    const snap = await getDoc(userRef);
+    if (snap.exists()) {
+      await updateDoc(userRef, patch);
+    } else {
+      await setDoc(userRef, {
+        selected: { breakfast: 1, secondBreakfast: 1, lunch: 1, dinner: 1 },
+        days: 3,
+        checkedItems: {},
+        manualMembers: [],
+        linkedMemberIds: [],
+        activeMemberIds: [],
+        memberSyncPrefs: {},
+        sharedWith: [],
+        ...patch
+      });
+    }
+
+    if (patch.selected) {
+      const prefs = nextData.memberSyncPrefs || {};
+      for (const m of linkedMembers) {
+        if (prefs[m.id]?.pushMyMenu && m.allowHostMenuSync) {
+          try {
+            await updateDoc(doc(db, 'users', m.id), {
+              selected: patch.selected
+            });
+          } catch (err) {
+            console.error(`Не удалось синхронизировать меню для ${m.profile?.name}:`, err);
+          }
+        }
+      }
+    }
+  };
 
   // Изменение настроек синхронизации для конкретного члена семьи
   const handleUpdateMemberSyncPref = async (memberUid, key, value) => {
@@ -403,8 +419,8 @@ const saveUserPatch = async (patch) => {
   if (!user) {
     return (
       <div className="min-h-screen bg-linear-to-br from-slate-950 via-emerald-950 to-slate-900 text-white px-6 flex items-center justify-center">
-        <div className="w-full max-w-sm bg-white/10 backdrop-blur-xl border border-white/15 rounded-3xl p-7 text-center shadow-2xl space-y-6">
-          <div className="w-16 h-16 rounded-3xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center mx-auto text-emerald-300">
+        <div className="animate-tab-enter w-full max-w-sm bg-white/10 backdrop-blur-xl border border-white/15 rounded-3xl p-7 text-center shadow-2xl space-y-6">
+          <div className="animate-glow w-16 h-16 rounded-3xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center mx-auto text-emerald-300">
             <Sparkles className="w-8 h-8" />
           </div>
           <div className="space-y-2">
@@ -415,7 +431,7 @@ const saveUserPatch = async (patch) => {
           </div>
           <button
             onClick={handleLogin}
-            className="w-full py-3.5 px-4 rounded-2xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-sm flex items-center justify-center gap-2.5 shadow-xl transition active:scale-[0.99]"
+            className="tap-spring w-full py-3.5 px-4 rounded-2xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-sm flex items-center justify-center gap-2.5 shadow-xl"
           >
             <LogIn className="w-5 h-5 text-emerald-600" /> Войти через Google
           </button>
@@ -441,14 +457,14 @@ const saveUserPatch = async (patch) => {
       <div className="max-w-lg mx-auto px-4 pt-4">
         {/* Индикатор офлайн-режима */}
         {isOffline && (
-          <div className="mb-3 bg-slate-800 text-amber-300 text-xs font-semibold px-3.5 py-2 rounded-2xl flex items-center justify-center gap-2">
+          <div className="animate-accordion mb-3 bg-slate-800 text-amber-300 text-xs font-semibold px-3.5 py-2 rounded-2xl flex items-center justify-center gap-2">
             <WifiOff className="w-4 h-4" /> Офлайн-режим: изменения сохранятся и синхронизируются при появлении сети
           </div>
         )}
 
         {/* Баннер подтверждения приглашения по ссылке */}
         {incomingInvite && (
-          <div className="mb-4 bg-emerald-900 text-white rounded-3xl p-4 shadow-lg space-y-3">
+          <div className="animate-accordion mb-4 bg-emerald-900 text-white rounded-3xl p-4 shadow-lg space-y-3">
             <div className="text-xs font-bold text-emerald-300 uppercase tracking-wider">
               Семейное приглашение
             </div>
@@ -469,13 +485,13 @@ const saveUserPatch = async (patch) => {
             <div className="flex gap-2">
               <button
                 onClick={() => handleRespondToInvite(incomingInvite, true, inviteAllowMenuSync)}
-                className="flex-1 py-2.5 rounded-xl bg-emerald-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-1"
+                className="tap-spring flex-1 py-2.5 rounded-xl bg-emerald-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-1"
               >
                 <CheckCircle2 className="w-4 h-4" /> Вступить в семью
               </button>
               <button
                 onClick={() => handleRespondToInvite(incomingInvite, false, false)}
-                className="px-4 py-2.5 rounded-xl bg-white/15 text-white text-xs font-semibold"
+                className="tap-spring px-4 py-2.5 rounded-xl bg-white/15 text-white text-xs font-semibold"
               >
                 Отклонить
               </button>
@@ -483,94 +499,96 @@ const saveUserPatch = async (patch) => {
           </div>
         )}
 
-        {/* Основной контент вкладок */}
-        {activeTab === 'menu' && (
-          <MenuView
-            profile={userDoc.profile}
-            menuData={menuData}
-            selected={userDoc.selected}
-            linkedMembers={linkedMembers}
-            onSelectMeal={(mealKey, dishNumber) =>
-              saveUserPatch({
-                selected: { ...(userDoc.selected || {}), [mealKey]: dishNumber }
-              })
-            }
-            onSyncMenu={syncMenuFromSheet}
-            isSyncing={isSyncing}
-            isOffline={isOffline}
-          />
-        )}
+        {/* Анимированный контейнер активной вкладки */}
+        <div key={activeTab} className="animate-tab-enter">
+          {activeTab === 'menu' && (
+            <MenuView
+              profile={userDoc.profile}
+              menuData={menuData}
+              selected={userDoc.selected}
+              linkedMembers={linkedMembers}
+              onSelectMeal={(mealKey, dishNumber) =>
+                saveUserPatch({
+                  selected: { ...(userDoc.selected || {}), [mealKey]: dishNumber }
+                })
+              }
+              onSyncMenu={syncMenuFromSheet}
+              isSyncing={isSyncing}
+              isOffline={isOffline}
+            />
+          )}
 
-        {activeTab === 'grocery' && (
-          <GroceryView
-            allIngredients={menuData?.ingredients || []}
-            myParticipant={{
-              id: user.uid,
-              profile: userDoc.profile,
-              selected: userDoc.selected
-            }}
-            familyMembers={allFamilyMembers.map((m) =>
-              m.type === 'manual' ? { ...m, selected: userDoc.selected } : m
-            )}
-            activeMemberIds={userDoc.activeMemberIds || []}
-            onToggleMember={(memberId) => {
-              const current = userDoc.activeMemberIds || [];
-              const next = current.includes(memberId)
-                ? current.filter((id) => id !== memberId)
-                : [...current, memberId];
-              saveUserPatch({ activeMemberIds: next });
-            }}
-            days={userDoc.days || 3}
-            onChangeDays={(d) => saveUserPatch({ days: d })}
-            checkedItems={userDoc.checkedItems || {}}
-            onToggleItem={(key) => {
-              const current = userDoc.checkedItems || {};
-              saveUserPatch({
-                checkedItems: { ...current, [key]: !current[key] }
-              });
-            }}
-            onClearChecked={() => saveUserPatch({ checkedItems: {} })}
-          />
-        )}
+          {activeTab === 'grocery' && (
+            <GroceryView
+              allIngredients={menuData?.ingredients || []}
+              myParticipant={{
+                id: user.uid,
+                profile: userDoc.profile,
+                selected: userDoc.selected
+              }}
+              familyMembers={allFamilyMembers.map((m) =>
+                m.type === 'manual' ? { ...m, selected: userDoc.selected } : m
+              )}
+              activeMemberIds={userDoc.activeMemberIds || []}
+              onToggleMember={(memberId) => {
+                const current = userDoc.activeMemberIds || [];
+                const next = current.includes(memberId)
+                  ? current.filter((id) => id !== memberId)
+                  : [...current, memberId];
+                saveUserPatch({ activeMemberIds: next });
+              }}
+              days={userDoc.days || 3}
+              onChangeDays={(d) => saveUserPatch({ days: d })}
+              checkedItems={userDoc.checkedItems || {}}
+              onToggleItem={(key) => {
+                const current = userDoc.checkedItems || {};
+                saveUserPatch({
+                  checkedItems: { ...current, [key]: !current[key] }
+                });
+              }}
+              onClearChecked={() => saveUserPatch({ checkedItems: {} })}
+            />
+          )}
 
-        {activeTab === 'rules' && <RulesView />}
+          {activeTab === 'rules' && <RulesView />}
 
-        {activeTab === 'profile' && (
-          <ProfileFamilyView
-            user={user}
-            profile={userDoc.profile}
-            onSaveProfile={(updatedProfile) => saveUserPatch({ profile: updatedProfile })}
-            familyHost={userDoc.familyHost || null}
-            allowHostMenuSync={Boolean(userDoc.allowHostMenuSync)}
-            onToggleAllowHostMenuSync={(val) => saveUserPatch({ allowHostMenuSync: val })}
-            onLeaveFamily={handleLeaveFamily}
-            manualMembers={userDoc.manualMembers || []}
-            onAddManualMember={(newMember) =>
-              saveUserPatch({
-                manualMembers: [...(userDoc.manualMembers || []), newMember],
-                activeMemberIds: [...(userDoc.activeMemberIds || []), newMember.id]
-              })
-            }
-            onRemoveManualMember={(id) =>
-              saveUserPatch({
-                manualMembers: (userDoc.manualMembers || []).filter((m) => m.id !== id),
-                activeMemberIds: (userDoc.activeMemberIds || []).filter((mid) => mid !== id)
-              })
-            }
-            linkedMembers={linkedMembers}
-            onUpdateMemberSyncPref={handleUpdateMemberSyncPref}
-            onRemoveLinkedMember={handleRemoveLinkedMember}
-            pendingRequests={pendingRequests}
-            onRespondToRequest={handleRespondToInvite}
-            onCreateInviteLink={handleCreateInviteLink}
-            onLogout={() => signOut(auth)}
-          />
-        )}
+          {activeTab === 'profile' && (
+            <ProfileFamilyView
+              user={user}
+              profile={userDoc.profile}
+              onSaveProfile={(updatedProfile) => saveUserPatch({ profile: updatedProfile })}
+              familyHost={userDoc.familyHost || null}
+              allowHostMenuSync={Boolean(userDoc.allowHostMenuSync)}
+              onToggleAllowHostMenuSync={(val) => saveUserPatch({ allowHostMenuSync: val })}
+              onLeaveFamily={handleLeaveFamily}
+              manualMembers={userDoc.manualMembers || []}
+              onAddManualMember={(newMember) =>
+                saveUserPatch({
+                  manualMembers: [...(userDoc.manualMembers || []), newMember],
+                  activeMemberIds: [...(userDoc.activeMemberIds || []), newMember.id]
+                })
+              }
+              onRemoveManualMember={(id) =>
+                saveUserPatch({
+                  manualMembers: (userDoc.manualMembers || []).filter((m) => m.id !== id),
+                  activeMemberIds: (userDoc.activeMemberIds || []).filter((mid) => mid !== id)
+                })
+              }
+              linkedMembers={linkedMembers}
+              onUpdateMemberSyncPref={handleUpdateMemberSyncPref}
+              onRemoveLinkedMember={handleRemoveLinkedMember}
+              pendingRequests={pendingRequests}
+              onRespondToRequest={handleRespondToInvite}
+              onCreateInviteLink={handleCreateInviteLink}
+              onLogout={() => signOut(auth)}
+            />
+          )}
+        </div>
       </div>
 
       {/* Нижняя стеклянная панель навигации (iOS Tab Bar) */}
       <nav className="fixed bottom-0 inset-x-0 bg-white/85 backdrop-blur-xl border-t border-slate-200/80 z-40">
-        <div className="max-w-lg mx-auto grid grid-cols-4 py-2 px-3">
+        <div className="max-w-lg mx-auto grid grid-cols-4 py-2 px-3 gap-1">
           {[
             { id: 'menu', label: 'Меню', icon: Utensils },
             { id: 'grocery', label: 'Покупки', icon: ShoppingBag },
@@ -583,12 +601,21 @@ const saveUserPatch = async (patch) => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex flex-col items-center justify-center py-1 rounded-2xl transition ${
-                  active ? 'text-emerald-600' : 'text-slate-400 hover:text-slate-600'
+                className={`tap-spring relative flex flex-col items-center justify-center py-1.5 rounded-2xl transition-all duration-200 ${
+                  active
+                    ? 'text-emerald-700 bg-emerald-500/12 shadow-xs'
+                    : 'text-slate-400 hover:text-slate-600'
                 }`}
               >
-                <Icon className={`w-5 h-5 mb-0.5 ${active ? 'stroke-[2.5]' : ''}`} />
-                <span className="text-[11px] font-bold">{tab.label}</span>
+                <Icon
+                  className={`w-5 h-5 mb-0.5 transition-transform duration-200 ${
+                    active ? 'stroke-[2.5] scale-110 text-emerald-600' : 'scale-100'
+                  }`}
+                />
+                <span className="text-[11px] font-bold tracking-tight">{tab.label}</span>
+                {active && (
+                  <span className="absolute -bottom-1 w-4 h-1 rounded-full bg-emerald-500 transition-all duration-300" />
+                )}
               </button>
             );
           })}

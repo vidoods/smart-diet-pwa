@@ -1,6 +1,12 @@
 @import "tailwindcss";
 
 @layer base {
+  html {
+    font-size: 17px;
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
+  }
+
   body {
     background-color: #f8fafc;
     color: #0f172a;
@@ -14,4 +20,58 @@
     background-color: #10b981;
     color: #fff;
   }
+}
+
+/* Плавное появление экрана при смене вкладок */
+@keyframes tabSlideFade {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.99);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Плавное раскрытие карточек и аккордеонов */
+@keyframes accordionReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Мягкое свечение для индикаторов и активных элементов */
+@keyframes softPulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+  }
+}
+
+.animate-tab-enter {
+  animation: tabSlideFade 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.animate-accordion {
+  animation: accordionReveal 0.22s ease-out forwards;
+}
+
+.animate-glow {
+  animation: softPulseGlow 2.4s infinite;
+}
+
+/* Тактильный пружинящий отклик в стиле iOS */
+.tap-spring {
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease, box-shadow 0.2s ease;
+}
+.tap-spring:active {
+  transform: scale(0.96);
 }
