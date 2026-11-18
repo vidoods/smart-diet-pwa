@@ -28,23 +28,23 @@ export default function ProfileFamilyView({
   return (
     <div className="space-y-4 pb-24">
       {/* 1. Карточка аккаунта */}
-      <div className="bg-white dark:bg-slate-900 rounded-3xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center justify-between transition-colors">
-        <div className="flex items-center gap-3">
+      <div className="bg-white dark:bg-slate-900 rounded-3xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center justify-between gap-3 transition-colors">
+        <div className="flex items-center gap-3 min-w-0">
           {user?.photoURL ? (
-            <img src={user.photoURL} alt="" className="w-11 h-11 rounded-2xl object-cover" />
+            <img src={user.photoURL} alt="" className="w-11 h-11 rounded-2xl object-cover shrink-0" />
           ) : (
-            <div className="w-11 h-11 rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 flex items-center justify-center">
+            <div className="w-11 h-11 rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 flex items-center justify-center shrink-0">
               <User className="w-5 h-5" />
             </div>
           )}
-          <div>
-            <div className="font-bold text-slate-900 dark:text-slate-100 text-sm">{profile.name}</div>
-            <div className="text-xs text-slate-500 dark:text-slate-400">{user?.email}</div>
+          <div className="min-w-0">
+            <div className="font-bold text-slate-900 dark:text-slate-100 text-sm truncate">{profile.name}</div>
+            <div className="text-xs text-slate-500 dark:text-slate-400 truncate">{user?.email}</div>
           </div>
         </div>
         <button
           onClick={onLogout}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-950/70 border border-transparent dark:border-rose-900/50 px-3 py-2 rounded-xl transition"
+          className="shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-950/70 border border-transparent dark:border-rose-900/50 px-3 py-2 rounded-xl transition"
         >
           <LogOut className="w-4 h-4" /> Выйти
         </button>
