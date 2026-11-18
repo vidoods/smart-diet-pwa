@@ -107,11 +107,11 @@ export default function App() {
   const allFamilyMembers = [...(userDoc.manualMembers || []), ...linkedMembers];
 
   return (
-    <div className="min-h-screen bg-slate-100/80 text-slate-900">
+    <div className="min-h-screen bg-slate-100/80 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors">
       <div className="max-w-lg mx-auto px-4 pt-4">
         {/* Индикатор офлайн-режима */}
         {isOffline && (
-          <div className="animate-accordion mb-3 bg-slate-800 text-amber-300 text-xs font-semibold px-3.5 py-2 rounded-2xl flex items-center justify-center gap-2">
+          <div className="animate-accordion mb-3 bg-slate-800 dark:bg-slate-900 border border-transparent dark:border-slate-800 text-amber-300 text-xs font-semibold px-3.5 py-2 rounded-2xl flex items-center justify-center gap-2">
             <WifiOff className="w-4 h-4" /> Офлайн-режим: изменения сохранятся и синхронизируются при появлении сети
           </div>
         )}
@@ -241,7 +241,7 @@ export default function App() {
       </div>
 
       {/* Нижняя стеклянная панель навигации (iOS Tab Bar) */}
-      <nav className="fixed bottom-0 inset-x-0 bg-white/85 backdrop-blur-xl border-t border-slate-200/80 z-40">
+      <nav className="fixed bottom-0 inset-x-0 bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border-t border-slate-200/80 dark:border-slate-850 dark:border-slate-800 z-40 transition-colors">
         <div className="max-w-lg mx-auto grid grid-cols-4 py-2 px-3 gap-1">
           {[
             { id: 'menu', label: 'Меню', icon: Utensils },
@@ -257,13 +257,13 @@ export default function App() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`tap-spring relative flex flex-col items-center justify-center py-1.5 rounded-2xl transition-all duration-200 ${
                   active
-                    ? 'text-emerald-700 bg-emerald-500/12 shadow-xs'
-                    : 'text-slate-400 hover:text-slate-600'
+                    ? 'text-emerald-700 dark:text-emerald-400 bg-emerald-500/12 dark:bg-emerald-500/15 shadow-xs'
+                    : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
                 }`}
               >
                 <Icon
                   className={`w-5 h-5 mb-0.5 transition-transform duration-200 ${
-                    active ? 'stroke-[2.5] scale-110 text-emerald-600' : 'scale-100'
+                    active ? 'stroke-[2.5] scale-110 text-emerald-600 dark:text-emerald-400' : 'scale-100'
                   }`}
                 />
                 <span className="text-[11px] font-bold tracking-tight">{tab.label}</span>

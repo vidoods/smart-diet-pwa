@@ -96,11 +96,13 @@ export default function MenuView({
       </div>
 
       {/* Переключатель: Обычный день / Разгрузочный день */}
-      <div className="bg-slate-200/70 p-1 rounded-2xl grid grid-cols-2 gap-1">
+      <div className="bg-slate-200/70 dark:bg-slate-900 p-1 rounded-2xl grid grid-cols-2 gap-1 border border-transparent dark:border-slate-800">
         <button
           onClick={() => setMode('regular')}
           className={`tap-spring py-2.5 rounded-xl text-xs font-bold transition ${
-            mode === 'regular' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600'
+            mode === 'regular'
+              ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
           }`}
         >
           Конструктор дня
@@ -108,7 +110,9 @@ export default function MenuView({
         <button
           onClick={() => setMode('fasting')}
           className={`tap-spring py-2.5 rounded-xl text-xs font-bold transition ${
-            mode === 'fasting' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600'
+            mode === 'fasting'
+              ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
           }`}
         >
           Разгрузочный день
@@ -116,8 +120,8 @@ export default function MenuView({
       </div>
 
       {/* Памятка по взвешиванию готового блюда */}
-      <div className="flex items-start gap-2.5 bg-emerald-50 border border-emerald-200/70 rounded-2xl px-3.5 py-2.5 text-xs text-emerald-900">
-        <Info className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+      <div className="flex items-start gap-2.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/70 dark:border-emerald-800/50 rounded-2xl px-3.5 py-2.5 text-xs text-emerald-900 dark:text-emerald-200">
+        <Info className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
         <span>Все граммовки пересчитаны под вашу норму и указаны для <b>готового блюда</b>.</span>
       </div>
 
@@ -152,7 +156,7 @@ export default function MenuView({
             return (
               <div
                 key={sec.key}
-                className="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden transition-shadow duration-200 hover:shadow-md"
+                className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden transition-all duration-200 hover:shadow-md"
               >
                 <button
                   type="button"
@@ -162,21 +166,21 @@ export default function MenuView({
                   <div className="pr-3 space-y-1.5">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className={`w-2.5 h-2.5 rounded-full bg-linear-to-r ${sec.accent}`} />
-                      <span className="font-bold text-slate-900 text-sm">{sec.label}</span>
-                      <span className="text-[11px] text-slate-400">{sec.time}</span>
+                      <span className="font-bold text-slate-900 dark:text-slate-100 text-sm">{sec.label}</span>
+                      <span className="text-[11px] text-slate-400 dark:text-slate-500">{sec.time}</span>
                       {familyOverrides.length > 0 && (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-lg">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-indigo-100 dark:bg-indigo-950/70 text-indigo-800 dark:text-indigo-300 border border-transparent dark:border-indigo-800/60 px-2 py-0.5 rounded-lg">
                           <Users className="w-3 h-3" /> +{familyOverrides.length} выбор семьи
                         </span>
                       )}
                     </div>
 
                     {activeDish ? (
-                      <p className="text-xs text-slate-600 line-clamp-2 font-medium">
+                      <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 font-medium">
                         {scaleTextWeights(activeDish.title, scale)}
                       </p>
                     ) : (
-                      <p className="text-xs text-amber-600">Нажмите, чтобы выбрать блюдо</p>
+                      <p className="text-xs text-amber-600 dark:text-amber-400">Нажмите, чтобы выбрать блюдо</p>
                     )}
 
                     {/* Подсвеченные плашки альтернативных блюд членов семьи в свёрнутой карточке */}
@@ -185,13 +189,13 @@ export default function MenuView({
                         {familyOverrides.map((ov) => (
                           <div
                             key={ov.memberId}
-                            className="bg-indigo-50/90 border border-indigo-200/80 rounded-xl px-2.5 py-1.5 text-[11px] text-indigo-950 flex items-center justify-between gap-2"
+                            className="bg-indigo-50/90 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-800/60 rounded-xl px-2.5 py-1.5 text-[11px] text-indigo-950 dark:text-indigo-200 flex items-center justify-between gap-2"
                           >
                             <span className="line-clamp-1">
-                              <b className="text-indigo-700">[{ov.memberName}]</b>{' '}
+                              <b className="text-indigo-700 dark:text-indigo-400">[{ov.memberName}]</b>{' '}
                               {scaleTextWeights(ov.dish.title, ov.scale)}
                             </span>
-                            <span className="text-[10px] font-bold text-indigo-700 shrink-0">
+                            <span className="text-[10px] font-bold text-indigo-700 dark:text-indigo-400 shrink-0">
                               {ov.macros.kcal} ккал
                             </span>
                           </div>
@@ -202,13 +206,13 @@ export default function MenuView({
 
                   <div className="flex items-center gap-2 shrink-0">
                     {activeDish && (
-                      <span className="text-xs font-bold bg-slate-100 text-slate-700 px-2.5 py-1 rounded-xl">
+                      <span className="text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-xl">
                         {scaleMacros(activeDish, scale).kcal} ккал
                       </span>
                     )}
                     <ChevronDown
-                      className={`w-5 h-5 text-slate-400 transition-transform duration-300 ${
-                        isOpen ? 'rotate-180 text-emerald-600' : ''
+                      className={`w-5 h-5 text-slate-400 dark:text-slate-500 transition-transform duration-300 ${
+                        isOpen ? 'rotate-180 text-emerald-600 dark:text-emerald-400' : ''
                       }`}
                     />
                   </div>
@@ -217,15 +221,15 @@ export default function MenuView({
                 {/* Плавное разворачивание и сворачивание списка блюд */}
                 <div className={`accordion-grid ${isOpen ? 'is-open' : ''}`}>
                   <div className="accordion-inner">
-                    <div className="border-t border-slate-100 px-3 py-2.5 space-y-2 bg-slate-50/60 max-h-96 overflow-y-auto">
+                    <div className="border-t border-slate-100 dark:border-slate-800 px-3 py-2.5 space-y-2 bg-slate-50/60 dark:bg-slate-950/50 max-h-96 overflow-y-auto">
                       {/* Развёрнутые карточки блюд, выбранных членами семьи */}
                       {familyOverrides.map((ov) => (
                         <div
                           key={`open_${ov.memberId}`}
-                          className="p-3 rounded-2xl bg-indigo-50/95 border border-indigo-300/80 shadow-xs space-y-1.5"
+                          className="p-3 rounded-2xl bg-indigo-50/95 dark:bg-indigo-950/60 border border-indigo-300/80 dark:border-indigo-800/70 shadow-xs space-y-1.5"
                         >
                           <div className="flex items-center justify-between gap-2">
-                            <span className="inline-flex items-center gap-1 text-[11px] font-extrabold text-indigo-800 bg-indigo-100 px-2 py-0.5 rounded-lg">
+                            <span className="inline-flex items-center gap-1 text-[11px] font-extrabold text-indigo-800 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-900/60 px-2 py-0.5 rounded-lg">
                               <Users className="w-3 h-3" /> [{ov.memberName}] — выбор участника
                             </span>
                             <button
@@ -234,20 +238,20 @@ export default function MenuView({
                                 onSelectMeal(sec.key, ov.dish.number);
                                 setOpenSection(null);
                               }}
-                              className="text-[10px] font-bold text-indigo-700 hover:text-indigo-900 underline"
+                              className="text-[10px] font-bold text-indigo-700 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-200 underline"
                             >
                               Выбрать и себе
                             </button>
                           </div>
-                          <div className="text-xs font-bold text-indigo-950 leading-snug">
+                          <div className="text-xs font-bold text-indigo-950 dark:text-indigo-100 leading-snug">
                             {scaleTextWeights(ov.dish.title, ov.scale)}
                           </div>
                           {ov.dish.composition && (
-                            <div className="text-[11px] text-indigo-900/75 leading-relaxed">
+                            <div className="text-[11px] text-indigo-900/75 dark:text-indigo-300/80 leading-relaxed">
                               {scaleTextWeights(ov.dish.composition, ov.scale)}
                             </div>
                           )}
-                          <div className="flex items-center gap-2 text-[11px] text-indigo-800 pt-0.5">
+                          <div className="flex items-center gap-2 text-[11px] text-indigo-800 dark:text-indigo-400 pt-0.5">
                             <span className="font-semibold">{ov.macros.kcal} ккал</span>
                             <span>• Б {ov.macros.protein}г</span>
                             <span>• Ж {ov.macros.fat}г</span>
@@ -273,31 +277,31 @@ export default function MenuView({
                             }}
                             className={`tap-spring w-full text-left p-3 rounded-2xl border transition flex items-start justify-between gap-3 ${
                               isSelected
-                                ? 'bg-emerald-50/90 border-emerald-400 shadow-sm'
+                                ? 'bg-emerald-50/90 dark:bg-emerald-950/50 border-emerald-400 dark:border-emerald-600 shadow-sm'
                                 : chosenByMembers.length > 0
-                                ? 'bg-indigo-50/50 border-indigo-200 hover:border-indigo-300'
-                                : 'bg-white border-slate-200/70 hover:border-slate-300'
+                                ? 'bg-indigo-50/50 dark:bg-indigo-950/30 border-indigo-200 dark:border-indigo-800/60 hover:border-indigo-300'
+                                : 'bg-white dark:bg-slate-900 border-slate-200/70 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
                             }`}
                           >
                             <div className="space-y-1">
-                              <div className="text-xs font-bold text-slate-900 leading-snug flex items-center gap-1.5 flex-wrap">
+                              <div className="text-xs font-bold text-slate-900 dark:text-slate-100 leading-snug flex items-center gap-1.5 flex-wrap">
                                 <span>{scaleTextWeights(dish.title, scale)}</span>
                                 {chosenByMembers.map((name) => (
                                   <span
                                     key={name}
-                                    className="text-[10px] font-bold bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded-md"
+                                    className="text-[10px] font-bold bg-indigo-100 dark:bg-indigo-900/60 text-indigo-800 dark:text-indigo-300 px-1.5 py-0.5 rounded-md"
                                   >
                                     [{name}]
                                   </span>
                                 ))}
                               </div>
                               {dish.composition && (
-                                <div className="text-[11px] text-slate-500 leading-relaxed">
+                                <div className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
                                   {scaleTextWeights(dish.composition, scale)}
                                 </div>
                               )}
-                              <div className="flex items-center gap-2 text-[11px] text-slate-500 pt-0.5">
-                                <span className="font-semibold text-emerald-700">{m.kcal} ккал</span>
+                              <div className="flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400 pt-0.5">
+                                <span className="font-semibold text-emerald-700 dark:text-emerald-400">{m.kcal} ккал</span>
                                 <span>• Б {m.protein}г</span>
                                 <span>• Ж {m.fat}г</span>
                                 <span>• У {m.carbs}г</span>
@@ -305,7 +309,7 @@ export default function MenuView({
                             </div>
                             <CheckCircle2
                               className={`w-5 h-5 shrink-0 mt-0.5 transition-colors ${
-                                isSelected ? 'text-emerald-600' : 'text-slate-200'
+                                isSelected ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-200 dark:text-slate-700'
                               }`}
                             />
                           </button>
@@ -325,20 +329,20 @@ export default function MenuView({
             return (
               <div
                 key={fd.id}
-                className="tap-spring bg-white rounded-3xl p-4 border border-slate-200/80 shadow-sm space-y-2"
+                className="tap-spring bg-white dark:bg-slate-900 rounded-3xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-2 transition-colors"
               >
                 <div className="flex items-center justify-between">
-                  <span className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-xl">
+                  <span className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-2.5 py-1 rounded-xl">
                     <Sparkles className="w-3.5 h-3.5" /> Вариант №{fd.number}
                   </span>
-                  <span className="inline-flex items-center gap-1 text-xs font-extrabold text-slate-800">
+                  <span className="inline-flex items-center gap-1 text-xs font-extrabold text-slate-800 dark:text-slate-200">
                     <Flame className="w-3.5 h-3.5 text-orange-500" /> {m.kcal} ккал
                   </span>
                 </div>
-                <p className="text-xs text-slate-700 leading-relaxed font-medium">
+                <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
                   {scaleTextWeights(fd.title, scale)}
                 </p>
-                <div className="text-[11px] text-slate-500">
+                <div className="text-[11px] text-slate-500 dark:text-slate-400">
                   Б: {m.protein} г • Ж: {m.fat} г • У: {m.carbs} г
                 </div>
               </div>

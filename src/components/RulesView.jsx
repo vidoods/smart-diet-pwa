@@ -143,39 +143,39 @@ export default function RulesView() {
 
       {/* 2. Три цели: похудение, здоровье, набор массы */}
       <div className="space-y-2.5">
-        <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-500 px-1">
+        <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-1">
           Как рацион помогает под вашу цель
         </h3>
         {GOALS_CARDS.map((goal) => {
           const Icon = goal.icon;
           const badgeColors = {
-            emerald: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-            sky: 'bg-sky-50 text-sky-700 border-sky-200',
-            amber: 'bg-amber-50 text-amber-700 border-amber-200'
+            emerald: 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60',
+            sky: 'bg-sky-50 dark:bg-sky-950/50 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-800/60',
+            amber: 'bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800/60'
           };
           const iconColors = {
-            emerald: 'bg-emerald-100 text-emerald-700',
-            sky: 'bg-sky-100 text-sky-700',
-            amber: 'bg-amber-100 text-amber-700'
+            emerald: 'bg-emerald-100 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-400',
+            sky: 'bg-sky-100 dark:bg-sky-950/70 text-sky-700 dark:text-sky-400',
+            amber: 'bg-amber-100 dark:bg-amber-950/70 text-amber-700 dark:text-amber-400'
           };
 
           return (
             <div
               key={goal.id}
-              className="tap-spring bg-white rounded-3xl p-4 border border-slate-200/80 shadow-sm space-y-2"
+              className="tap-spring bg-white dark:bg-slate-900 rounded-3xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-2 transition-colors"
             >
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2.5">
                   <div className={`w-9 h-9 rounded-2xl flex items-center justify-center ${iconColors[goal.color]}`}>
                     <Icon className="w-5 h-5" />
                   </div>
-                  <div className="font-bold text-slate-900 text-sm">{goal.title}</div>
+                  <div className="font-bold text-slate-900 dark:text-slate-100 text-sm">{goal.title}</div>
                 </div>
                 <span className={`text-[10px] font-bold px-2.5 py-1 rounded-xl border ${badgeColors[goal.color]}`}>
                   {goal.badge}
                 </span>
               </div>
-              <p className="text-xs text-slate-600 leading-relaxed">{goal.text}</p>
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{goal.text}</p>
             </div>
           );
         })}
@@ -183,7 +183,7 @@ export default function RulesView() {
 
       {/* 3. 5 главных принципов питания (плавный аккордеон) */}
       <div className="space-y-2.5">
-        <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-500 px-1">
+        <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-1">
           5 ключевых принципов
         </h3>
         {CORE_PRINCIPLES.map((item, idx) => {
@@ -192,7 +192,7 @@ export default function RulesView() {
           return (
             <div
               key={item.num}
-              className="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden transition-shadow duration-200 hover:shadow-md"
+              className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden transition-all duration-200 hover:shadow-md"
             >
               <button
                 type="button"
@@ -200,29 +200,29 @@ export default function RulesView() {
                 className="tap-spring w-full p-4 flex items-start justify-between gap-3 text-left"
               >
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-2xl bg-emerald-50 text-emerald-700 font-extrabold text-xs flex items-center justify-center shrink-0 mt-0.5 border border-emerald-200/70">
+                  <div className="w-8 h-8 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 font-extrabold text-xs flex items-center justify-center shrink-0 mt-0.5 border border-emerald-200/70 dark:border-emerald-800/60">
                     {item.num}
                   </div>
                   <div>
-                    <div className="font-bold text-slate-900 text-sm flex items-center gap-1.5">
+                    <div className="font-bold text-slate-900 dark:text-slate-100 text-sm flex items-center gap-1.5">
                       <span>{item.title}</span>
                     </div>
-                    <p className="text-xs text-slate-500 mt-1 leading-snug">{item.summary}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-snug">{item.summary}</p>
                   </div>
                 </div>
                 <ChevronDown
-                  className={`w-5 h-5 text-slate-400 shrink-0 mt-1 transition-transform duration-300 ${
-                    isOpen ? 'rotate-180 text-emerald-600' : ''
+                  className={`w-5 h-5 text-slate-400 dark:text-slate-500 shrink-0 mt-1 transition-transform duration-300 ${
+                    isOpen ? 'rotate-180 text-emerald-600 dark:text-emerald-400' : ''
                   }`}
                 />
               </button>
 
               <div className={`accordion-grid ${isOpen ? 'is-open' : ''}`}>
                 <div className="accordion-inner">
-                  <div className="px-4 pb-4 pt-2 border-t border-slate-100 bg-slate-50/60 space-y-2">
+                  <div className="px-4 pb-4 pt-2 border-t border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-950/50 space-y-2">
                     {item.points.map((pt, pIdx) => (
-                      <div key={pIdx} className="flex items-start gap-2 text-xs text-slate-700 leading-relaxed">
-                        <Icon className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-1" />
+                      <div key={pIdx} className="flex items-start gap-2 text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                        <Icon className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-1" />
                         <span>{pt}</span>
                       </div>
                     ))}
@@ -235,17 +235,17 @@ export default function RulesView() {
       </div>
 
       {/* 4. Что исключаем полностью */}
-      <div className="bg-rose-50/70 border border-rose-200/80 rounded-3xl p-4 space-y-2.5">
-        <div className="flex items-center gap-2 font-bold text-rose-950 text-sm">
-          <Ban className="w-4 h-4 text-rose-600" /> Что полностью исключается из рациона
+      <div className="bg-rose-50/70 dark:bg-rose-950/40 border border-rose-200/80 dark:border-rose-900/60 rounded-3xl p-4 space-y-2.5 transition-colors">
+        <div className="flex items-center gap-2 font-bold text-rose-950 dark:text-rose-200 text-sm">
+          <Ban className="w-4 h-4 text-rose-600 dark:text-rose-400" /> Что полностью исключается из рациона
         </div>
-        <p className="text-[11px] text-rose-800/80">
+        <p className="text-[11px] text-rose-800/80 dark:text-rose-300/80">
           Эти продукты задерживают жидкость, провоцируют скачки сахара в крови и тормозят снижение веса:
         </p>
         <ul className="space-y-1.5">
           {EXCLUDED_ITEMS.map((ex, i) => (
-            <li key={i} className="flex items-start gap-2 text-xs text-rose-950">
-              <span className="text-rose-500 font-bold">•</span>
+            <li key={i} className="flex items-start gap-2 text-xs text-rose-950 dark:text-rose-200">
+              <span className="text-rose-500 dark:text-rose-400 font-bold">•</span>
               <span>{ex}</span>
             </li>
           ))}
@@ -253,14 +253,14 @@ export default function RulesView() {
       </div>
 
       {/* 5. Что употребляем умеренно */}
-      <div className="bg-amber-50/70 border border-amber-200/80 rounded-3xl p-4 space-y-2.5">
-        <div className="flex items-center gap-2 font-bold text-amber-950 text-sm">
-          <ShieldAlert className="w-4 h-4 text-amber-600" /> Продукты с контролем порций
+      <div className="bg-amber-50/70 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-900/60 rounded-3xl p-4 space-y-2.5 transition-colors">
+        <div className="flex items-center gap-2 font-bold text-amber-950 dark:text-amber-200 text-sm">
+          <ShieldAlert className="w-4 h-4 text-amber-600 dark:text-amber-400" /> Продукты с контролем порций
         </div>
         <ul className="space-y-1.5">
           {LIMITED_ITEMS.map((lim, i) => (
-            <li key={i} className="flex items-start gap-2 text-xs text-amber-950">
-              <span className="text-amber-600 font-bold">•</span>
+            <li key={i} className="flex items-start gap-2 text-xs text-amber-950 dark:text-amber-200">
+              <span className="text-amber-600 dark:text-amber-400 font-bold">•</span>
               <span>{lim}</span>
             </li>
           ))}
@@ -268,11 +268,11 @@ export default function RulesView() {
       </div>
 
       {/* 6. Закрепление результата (стабилизация) */}
-      <div className="bg-white rounded-3xl p-4 border border-slate-200/80 shadow-sm space-y-2">
-        <div className="flex items-center gap-2 font-bold text-slate-900 text-sm">
-          <Sparkles className="w-4 h-4 text-emerald-600" /> Как удержать вес после похудения
+      <div className="bg-white dark:bg-slate-900 rounded-3xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-2 transition-colors">
+        <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-slate-100 text-sm">
+          <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> Как удержать вес после похудения
         </div>
-        <p className="text-xs text-slate-600 leading-relaxed">
+        <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
           Когда вы достигнете желаемого веса, переключите цель в разделе <b>«Профиль»</b> на <b>«Поддержание веса»</b>. Программа плавно пересчитает размер порций под поддерживающую калорийность, сохранив привычный режим и любимые блюда без эффекта возврата килограммов. Раз в 1–2 недели на этапе стабилизации допустим 1 свободный приём пищи (Cheat meal).
         </p>
       </div>

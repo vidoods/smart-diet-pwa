@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
   html {
     font-size: 17px;
@@ -14,6 +16,11 @@
     -moz-osx-font-smoothing: grayscale;
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
     padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  html.dark body {
+    background-color: #090d16;
+    color: #f1f5f9;
   }
 
   body::selection {
