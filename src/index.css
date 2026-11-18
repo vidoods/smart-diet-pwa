@@ -74,7 +74,7 @@
 }
 
 .animate-tab-enter {
-  animation: tabSlideFade 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: tabSlideFade 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 .animate-accordion {
