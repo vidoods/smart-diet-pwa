@@ -20,7 +20,8 @@ export default function MenuView({
   isOffline
 }) {
   const [mode, setMode] = useState('regular'); // 'regular' | 'fasting'
-  const [openSection, setOpenSection] = useState('breakfast');
+  // Все блоки приёмов пищи (включая Завтрак) закрыты по умолчанию при открытии страницы
+  const [openSection, setOpenSection] = useState(null);
 
   const metrics = calculateProfileMetrics(profile);
   if (!metrics) return null;
@@ -61,7 +62,7 @@ export default function MenuView({
             onClick={onSyncMenu}
             disabled={isSyncing || isOffline}
             title="Обновить базу блюд из Google Таблицы"
-            className="p-2.5 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/10 text-emerald-300 disabled:opacity-40 transition"
+            className="tap-spring p-2.5 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/10 text-emerald-300 disabled:opacity-40 transition"
           >
             <RefreshCw className={`w-5 h-5 ${isSyncing ? 'animate-spin' : ''}`} />
           </button>
@@ -98,7 +99,7 @@ export default function MenuView({
       <div className="bg-slate-200/70 p-1 rounded-2xl grid grid-cols-2 gap-1">
         <button
           onClick={() => setMode('regular')}
-          className={`py-2.5 rounded-xl text-xs font-bold transition ${
+          className={`tap-spring py-2.5 rounded-xl text-xs font-bold transition ${
             mode === 'regular' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600'
           }`}
         >
@@ -106,7 +107,7 @@ export default function MenuView({
         </button>
         <button
           onClick={() => setMode('fasting')}
-          className={`py-2.5 rounded-xl text-xs font-bold transition ${
+          className={`tap-spring py-2.5 rounded-xl text-xs font-bold transition ${
             mode === 'fasting' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600'
           }`}
         >
@@ -121,7 +122,7 @@ export default function MenuView({
       </div>
 
       {mode === 'regular' ? (
-        <div className="space-y-3">
+        <div key="regular-mode" className="animate-tab-enter space-y-3">
           {MEAL_SECTIONS.map((sec) => {
             const dishes = menuData?.menu?.[sec.key] || [];
             const activeNum = Number(selected?.[sec.key]);
@@ -151,11 +152,12 @@ export default function MenuView({
             return (
               <div
                 key={sec.key}
-                className="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden"
+                className="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden transition-shadow duration-200 hover:shadow-md"
               >
                 <button
+                  type="button"
                   onClick={() => setOpenSection(isOpen ? null : sec.key)}
-                  className="w-full p-4 flex items-center justify-between text-left"
+                  className="tap-spring w-full p-4 flex items-center justify-between text-left"
                 >
                   <div className="pr-3 space-y-1.5">
                     <div className="flex items-center gap-2 flex-wrap">
@@ -205,120 +207,125 @@ export default function MenuView({
                       </span>
                     )}
                     <ChevronDown
-                      className={`w-5 h-5 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+                      className={`w-5 h-5 text-slate-400 transition-transform duration-300 ${
+                        isOpen ? 'rotate-180 text-emerald-600' : ''
+                      }`}
                     />
                   </div>
                 </button>
 
-                {isOpen && (
-                  <div className="border-t border-slate-100 px-3 py-2.5 space-y-2 bg-slate-50/60 max-h-96 overflow-y-auto">
-                    {/* Развёрнутые карточки блюд, выбранных членами семьи */}
-                    {familyOverrides.map((ov) => (
-                      <div
-                        key={`open_${ov.memberId}`}
-                        className="p-3 rounded-2xl bg-indigo-50/95 border border-indigo-300/80 shadow-xs space-y-1.5"
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="inline-flex items-center gap-1 text-[11px] font-extrabold text-indigo-800 bg-indigo-100 px-2 py-0.5 rounded-lg">
-                            <Users className="w-3 h-3" /> [{ov.memberName}] — выбор участника
-                          </span>
+                {/* Плавное разворачивание и сворачивание списка блюд */}
+                <div className={`accordion-grid ${isOpen ? 'is-open' : ''}`}>
+                  <div className="accordion-inner">
+                    <div className="border-t border-slate-100 px-3 py-2.5 space-y-2 bg-slate-50/60 max-h-96 overflow-y-auto">
+                      {/* Развёрнутые карточки блюд, выбранных членами семьи */}
+                      {familyOverrides.map((ov) => (
+                        <div
+                          key={`open_${ov.memberId}`}
+                          className="p-3 rounded-2xl bg-indigo-50/95 border border-indigo-300/80 shadow-xs space-y-1.5"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="inline-flex items-center gap-1 text-[11px] font-extrabold text-indigo-800 bg-indigo-100 px-2 py-0.5 rounded-lg">
+                              <Users className="w-3 h-3" /> [{ov.memberName}] — выбор участника
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                onSelectMeal(sec.key, ov.dish.number);
+                                setOpenSection(null);
+                              }}
+                              className="text-[10px] font-bold text-indigo-700 hover:text-indigo-900 underline"
+                            >
+                              Выбрать и себе
+                            </button>
+                          </div>
+                          <div className="text-xs font-bold text-indigo-950 leading-snug">
+                            {scaleTextWeights(ov.dish.title, ov.scale)}
+                          </div>
+                          {ov.dish.composition && (
+                            <div className="text-[11px] text-indigo-900/75 leading-relaxed">
+                              {scaleTextWeights(ov.dish.composition, ov.scale)}
+                            </div>
+                          )}
+                          <div className="flex items-center gap-2 text-[11px] text-indigo-800 pt-0.5">
+                            <span className="font-semibold">{ov.macros.kcal} ккал</span>
+                            <span>• Б {ov.macros.protein}г</span>
+                            <span>• Ж {ov.macros.fat}г</span>
+                            <span>• У {ov.macros.carbs}г</span>
+                          </div>
+                        </div>
+                      ))}
+
+                      {/* Список всех блюд для вашего выбора */}
+                      {dishes.map((dish) => {
+                        const isSelected = Number(dish.number) === activeNum;
+                        const m = scaleMacros(dish, scale);
+                        const chosenByMembers = familyOverrides
+                          .filter((ov) => Number(ov.dish.number) === Number(dish.number))
+                          .map((ov) => ov.memberName);
+
+                        return (
                           <button
-                            type="button"
+                            key={dish.id}
                             onClick={() => {
-                              onSelectMeal(sec.key, ov.dish.number);
+                              onSelectMeal(sec.key, dish.number);
                               setOpenSection(null);
                             }}
-                            className="text-[10px] font-bold text-indigo-700 hover:text-indigo-900 underline"
-                          >
-                            Выбрать и себе
-                          </button>
-                        </div>
-                        <div className="text-xs font-bold text-indigo-950 leading-snug">
-                          {scaleTextWeights(ov.dish.title, ov.scale)}
-                        </div>
-                        {ov.dish.composition && (
-                          <div className="text-[11px] text-indigo-900/75 leading-relaxed">
-                            {scaleTextWeights(ov.dish.composition, ov.scale)}
-                          </div>
-                        )}
-                        <div className="flex items-center gap-2 text-[11px] text-indigo-800 pt-0.5">
-                          <span className="font-semibold">{ov.macros.kcal} ккал</span>
-                          <span>• Б {ov.macros.protein}г</span>
-                          <span>• Ж {ov.macros.fat}г</span>
-                          <span>• У {ov.macros.carbs}г</span>
-                        </div>
-                      </div>
-                    ))}
-
-                    {/* Список всех блюд для вашего выбора */}
-                    {dishes.map((dish) => {
-                      const isSelected = Number(dish.number) === activeNum;
-                      const m = scaleMacros(dish, scale);
-                      const chosenByMembers = familyOverrides
-                        .filter((ov) => Number(ov.dish.number) === Number(dish.number))
-                        .map((ov) => ov.memberName);
-
-                      return (
-                        <button
-                          key={dish.id}
-                          onClick={() => {
-                            onSelectMeal(sec.key, dish.number);
-                            setOpenSection(null);
-                          }}
-                          className={`w-full text-left p-3 rounded-2xl border transition flex items-start justify-between gap-3 ${
-                            isSelected
-                              ? 'bg-emerald-50/90 border-emerald-400 shadow-sm'
-                              : chosenByMembers.length > 0
-                              ? 'bg-indigo-50/50 border-indigo-200 hover:border-indigo-300'
-                              : 'bg-white border-slate-200/70 hover:border-slate-300'
-                          }`}
-                        >
-                          <div className="space-y-1">
-                            <div className="text-xs font-bold text-slate-900 leading-snug flex items-center gap-1.5 flex-wrap">
-                              <span>{scaleTextWeights(dish.title, scale)}</span>
-                              {chosenByMembers.map((name) => (
-                                <span
-                                  key={name}
-                                  className="text-[10px] font-bold bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded-md"
-                                >
-                                  [{name}]
-                                </span>
-                              ))}
-                            </div>
-                            {dish.composition && (
-                              <div className="text-[11px] text-slate-500 leading-relaxed">
-                                {scaleTextWeights(dish.composition, scale)}
-                              </div>
-                            )}
-                            <div className="flex items-center gap-2 text-[11px] text-slate-500 pt-0.5">
-                              <span className="font-semibold text-emerald-700">{m.kcal} ккал</span>
-                              <span>• Б {m.protein}г</span>
-                              <span>• Ж {m.fat}г</span>
-                              <span>• У {m.carbs}г</span>
-                            </div>
-                          </div>
-                          <CheckCircle2
-                            className={`w-5 h-5 shrink-0 mt-0.5 ${
-                              isSelected ? 'text-emerald-600' : 'text-slate-200'
+                            className={`tap-spring w-full text-left p-3 rounded-2xl border transition flex items-start justify-between gap-3 ${
+                              isSelected
+                                ? 'bg-emerald-50/90 border-emerald-400 shadow-sm'
+                                : chosenByMembers.length > 0
+                                ? 'bg-indigo-50/50 border-indigo-200 hover:border-indigo-300'
+                                : 'bg-white border-slate-200/70 hover:border-slate-300'
                             }`}
-                          />
-                        </button>
-                      );
-                    })}
+                          >
+                            <div className="space-y-1">
+                              <div className="text-xs font-bold text-slate-900 leading-snug flex items-center gap-1.5 flex-wrap">
+                                <span>{scaleTextWeights(dish.title, scale)}</span>
+                                {chosenByMembers.map((name) => (
+                                  <span
+                                    key={name}
+                                    className="text-[10px] font-bold bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded-md"
+                                  >
+                                    [{name}]
+                                  </span>
+                                ))}
+                              </div>
+                              {dish.composition && (
+                                <div className="text-[11px] text-slate-500 leading-relaxed">
+                                  {scaleTextWeights(dish.composition, scale)}
+                                </div>
+                              )}
+                              <div className="flex items-center gap-2 text-[11px] text-slate-500 pt-0.5">
+                                <span className="font-semibold text-emerald-700">{m.kcal} ккал</span>
+                                <span>• Б {m.protein}г</span>
+                                <span>• Ж {m.fat}г</span>
+                                <span>• У {m.carbs}г</span>
+                              </div>
+                            </div>
+                            <CheckCircle2
+                              className={`w-5 h-5 shrink-0 mt-0.5 transition-colors ${
+                                isSelected ? 'text-emerald-600' : 'text-slate-200'
+                              }`}
+                            />
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                )}
+                </div>
               </div>
             );
           })}
         </div>
       ) : (
-        <div className="space-y-3">
+        <div key="fasting-mode" className="animate-tab-enter space-y-3">
           {(menuData?.menu?.fastDays || []).map((fd) => {
             const m = scaleMacros(fd, scale);
             return (
               <div
                 key={fd.id}
-                className="bg-white rounded-3xl p-4 border border-slate-200/80 shadow-sm space-y-2"
+                className="tap-spring bg-white rounded-3xl p-4 border border-slate-200/80 shadow-sm space-y-2"
               >
                 <div className="flex items-center justify-between">
                   <span className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-xl">
