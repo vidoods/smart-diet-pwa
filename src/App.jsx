@@ -249,28 +249,28 @@ export default function App() {
   };
 
   // Сохранение изменений в документе пользователя + трансляция меню участникам с включённой синхронизацией
-  const saveUserPatch = async (patch) => {
-    if (!user) return;
-    const userRef = doc(db, 'users', user.uid);
-    const nextData = { ...(userDoc || {}), ...patch };
-    setUserDoc(nextData);
-    await setDoc(userRef, nextData, { merge: true });
+const saveUserPatch = async (patch) => {
+  if (!user) return;
+  const userRef = doc(db, 'users', user.uid);
+  setUserDoc((prev) => ({ ...(prev || {}), ...patch }));
 
-    if (patch.selected) {
-      const prefs = nextData.memberSyncPrefs || {};
-      for (const m of linkedMembers) {
-        if (prefs[m.id]?.pushMyMenu && m.allowHostMenuSync) {
-          try {
-            await updateDoc(doc(db, 'users', m.id), {
-              selected: patch.selected
-            });
-          } catch (err) {
-            console.error(`Не удалось синхронизировать меню для ${m.profile?.name}:`, err);
-          }
-        }
-      }
-    }
-  };
+  const snap = await getDoc(userRef);
+  if (snap.exists()) {
+    await updateDoc(userRef, patch);
+  } else {
+    await setDoc(userRef, {
+      selected: { breakfast: 1, secondBreakfast: 1, lunch: 1, dinner: 1 },
+      days: 3,
+      checkedItems: {},
+      manualMembers: [],
+      linkedMemberIds: [],
+      activeMemberIds: [],
+      memberSyncPrefs: {},
+      sharedWith: [],
+      ...patch
+    });
+  }
+};
 
   // Изменение настроек синхронизации для конкретного члена семьи
   const handleUpdateMemberSyncPref = async (memberUid, key, value) => {
