@@ -10,7 +10,9 @@ import {
   ShieldOff,
   LogOut,
   Save,
-  Copy
+  Copy,
+  RefreshCw,
+  DoorOpen
 } from 'lucide-react';
 import { EMPTY_PROFILE_FORM, calculateProfileMetrics } from '../utils/dietEngine';
 
@@ -18,10 +20,15 @@ export default function ProfileFamilyView({
   user,
   profile,
   onSaveProfile,
+  familyHost,
+  allowHostMenuSync,
+  onToggleAllowHostMenuSync,
+  onLeaveFamily,
   manualMembers,
   onAddManualMember,
   onRemoveManualMember,
   linkedMembers,
+  onUpdateMemberSyncPref,
   onRemoveLinkedMember,
   pendingRequests,
   onRespondToRequest,
@@ -121,7 +128,47 @@ export default function ProfileFamilyView({
         </button>
       </div>
 
-      {/* 2. Входящие запросы на доступ к вашему меню (если кто-то пригласил вас в семью) */}
+      {/* 2. Блок участника семьи (если вас пригласил глава семьи) */}
+      {familyHost?.uid && (
+        <div className="bg-indigo-50/80 border border-indigo-200 rounded-3xl p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-xs font-extrabold text-indigo-950 flex items-center gap-1.5">
+                <Users className="w-4 h-4 text-indigo-600" /> Вы в семье у {familyHost.name}
+              </div>
+              <div className="text-[11px] text-indigo-700 mt-0.5">{familyHost.email}</div>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                if (window.confirm(`Выйти из семьи пользователя ${familyHost.name}?`)) {
+                  onLeaveFamily();
+                }
+              }}
+              className="inline-flex items-center gap-1 text-xs font-bold text-rose-600 bg-white hover:bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-xl transition"
+            >
+              <DoorOpen className="w-3.5 h-3.5" /> Выйти из семьи
+            </button>
+          </div>
+
+          <label className="flex items-center justify-between bg-white rounded-2xl p-3 border border-indigo-200/70 cursor-pointer">
+            <div className="pr-3">
+              <div className="text-xs font-bold text-slate-900">Синхронизировать моё меню с главой семьи</div>
+              <div className="text-[11px] text-slate-500 leading-snug mt-0.5">
+                Блюда будут обновляться от <b>{familyHost.name}</b>, а вес порций и КБЖУ останутся строго по вашим параметрам.
+              </div>
+            </div>
+            <input
+              type="checkbox"
+              checked={allowHostMenuSync}
+              onChange={(e) => onToggleAllowHostMenuSync(e.target.checked)}
+              className="w-5 h-5 rounded accent-indigo-600 shrink-0"
+            />
+          </label>
+        </div>
+      )}
+
+      {/* 3. Входящие запросы на доступ к вашему меню */}
       {pendingRequests?.length > 0 && (
         <div className="bg-amber-50 border border-amber-200 rounded-3xl p-4 space-y-3">
           <div className="flex items-center gap-2 text-amber-900 font-bold text-sm">
@@ -130,17 +177,17 @@ export default function ProfileFamilyView({
           {pendingRequests.map((req) => (
             <div key={req.id} className="bg-white rounded-2xl p-3 border border-amber-200/70 space-y-2">
               <p className="text-xs text-slate-700">
-                Пользователь <b>{req.fromName}</b> ({req.fromEmail}) просит разрешение видеть ваше выбранное меню и норму калорий для составления общего списка покупок.
+                Пользователь <b>{req.fromName}</b> ({req.fromEmail}) приглашает вас в семью для общего списка покупок.
               </p>
               <div className="flex gap-2">
                 <button
-                  onClick={() => onRespondToRequest(req, true)}
+                  onClick={() => onRespondToRequest(req, true, true)}
                   className="flex-1 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold flex items-center justify-center gap-1"
                 >
-                  <Check className="w-4 h-4" /> Разрешить
+                  <Check className="w-4 h-4" /> Вступить
                 </button>
                 <button
-                  onClick={() => onRespondToRequest(req, false)}
+                  onClick={() => onRespondToRequest(req, false, false)}
                   className="flex-1 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold flex items-center justify-center gap-1"
                 >
                   <ShieldOff className="w-4 h-4" /> Отклонить
@@ -151,7 +198,7 @@ export default function ProfileFamilyView({
         </div>
       )}
 
-      {/* 3. Мои антропометрические параметры */}
+      {/* 4. Мои антропометрические параметры */}
       <form onSubmit={handleProfileSave} className="bg-white rounded-3xl p-4 border border-slate-200/80 shadow-sm space-y-3.5">
         <div className="flex items-center justify-between">
           <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
@@ -255,7 +302,7 @@ export default function ProfileFamilyView({
         </button>
       </form>
 
-      {/* 4. Блок «Семья и совместные покупки» */}
+      {/* 5. Блок «Семья и совместные покупки» */}
       <div className="bg-white rounded-3xl p-4 border border-slate-200/80 shadow-sm space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
@@ -286,7 +333,7 @@ export default function ProfileFamilyView({
         {inviteUrl && (
           <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 space-y-2">
             <p className="text-[11px] text-slate-600">
-              Отправьте эту ссылку члену семьи. После входа и подтверждения доступа его меню и порции появятся в вашей корзине:
+              Отправьте эту ссылку члену семьи. После входа подтянутся его параметры для расчёта порций и покупок:
             </p>
             <div className="flex items-center gap-2">
               <input
@@ -392,7 +439,7 @@ export default function ProfileFamilyView({
         )}
 
         {/* Список добавленных членов семьи */}
-        <div className="space-y-2">
+        <div className="space-y-3">
           {manualMembers.length === 0 && linkedMembers.length === 0 ? (
             <p className="text-xs text-slate-400 text-center py-2">
               Пока никто не добавлен. Вы можете добавить близких вручную или пригласить по ссылке.
@@ -430,23 +477,64 @@ export default function ProfileFamilyView({
                 return (
                   <div
                     key={m.id}
-                    className="flex items-center justify-between bg-emerald-50/60 border border-emerald-200/70 rounded-2xl px-3.5 py-2.5"
+                    className="bg-emerald-50/60 border border-emerald-200/80 rounded-2xl p-3.5 space-y-2.5"
                   >
-                    <div>
-                      <div className="text-xs font-bold text-emerald-950">
-                        {m.profile.name}{' '}
-                        <span className="text-[10px] font-semibold text-emerald-700">(аккаунт подключен)</span>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-xs font-bold text-emerald-950">
+                          {m.profile.name}{' '}
+                          <span className="text-[10px] font-semibold text-emerald-700">(подключён)</span>
+                        </div>
+                        <div className="text-[11px] text-emerald-800/80">
+                          {m.profile.weight} кг • {m.profile.height} см • Норма {mm?.targetKcal} ккал
+                        </div>
                       </div>
-                      <div className="text-[11px] text-emerald-800/80">
-                        Свое меню • Норма {mm?.targetKcal} ккал
-                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (window.confirm(`Удалить ${m.profile.name} из семьи?`)) {
+                            onRemoveLinkedMember(m.id);
+                          }
+                        }}
+                        title="Удалить члена семьи"
+                        className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-600 bg-white hover:bg-rose-50 border border-rose-200 px-2.5 py-1.5 rounded-xl transition"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" /> Удалить
+                      </button>
                     </div>
-                    <button
-                      onClick={() => onRemoveLinkedMember(m.id)}
-                      className="p-2 text-slate-400 hover:text-rose-600 transition"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+
+                    {/* Переключатель 1: подтягивать ли индивидуальный выбор блюд этого участника */}
+                    <label className="flex items-center justify-between bg-white/90 rounded-xl px-3 py-2 border border-emerald-200/60 cursor-pointer">
+                      <span className="text-[11px] text-slate-700 font-medium pr-2">
+                        Подтягивать выбор блюд от <b>{m.profile.name}</b> в моё меню и покупки (если отличается)
+                      </span>
+                      <input
+                        type="checkbox"
+                        checked={Boolean(m.useMemberMeals)}
+                        onChange={(e) => onUpdateMemberSyncPref(m.id, 'useMemberMeals', e.target.checked)}
+                        className="w-4 h-4 rounded accent-emerald-600 shrink-0"
+                      />
+                    </label>
+
+                    {/* Переключатель 2: транслировать ли ваше меню в профиль этого участника */}
+                    <label className="flex items-center justify-between bg-white/90 rounded-xl px-3 py-2 border border-emerald-200/60 cursor-pointer">
+                      <div className="pr-2">
+                        <div className="text-[11px] text-slate-700 font-medium flex items-center gap-1">
+                          <RefreshCw className="w-3 h-3 text-emerald-600" /> Синхронизировать моё меню в профиль <b>{m.profile.name}</b>
+                        </div>
+                        <div className="text-[10px] text-slate-400">
+                          {m.allowHostMenuSync
+                            ? 'Участник разрешил синхронизацию меню'
+                            : 'Ожидает разрешения синхронизации в профиле участника'}
+                        </div>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={Boolean(m.pushMyMenu)}
+                        onChange={(e) => onUpdateMemberSyncPref(m.id, 'pushMyMenu', e.target.checked)}
+                        className="w-4 h-4 rounded accent-emerald-600 shrink-0"
+                      />
+                    </label>
                   </div>
                 );
               })}

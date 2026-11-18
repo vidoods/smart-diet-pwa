@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { RefreshCw, CheckCircle2, Flame, Sparkles, ChevronDown, Info } from 'lucide-react';
+import { RefreshCw, CheckCircle2, Flame, Sparkles, ChevronDown, Info, Users } from 'lucide-react';
 import { calculateProfileMetrics, scaleTextWeights, scaleMacros } from '../utils/dietEngine';
 
 const MEAL_SECTIONS = [
@@ -9,7 +9,16 @@ const MEAL_SECTIONS = [
   { key: 'dinner', label: 'Ужин', time: '17:00 – 20:00', accent: 'from-violet-500 to-purple-600' }
 ];
 
-export default function MenuView({ profile, menuData, selected, onSelectMeal, onSyncMenu, isSyncing, isOffline }) {
+export default function MenuView({
+  profile,
+  menuData,
+  selected,
+  linkedMembers = [],
+  onSelectMeal,
+  onSyncMenu,
+  isSyncing,
+  isOffline
+}) {
   const [mode, setMode] = useState('regular'); // 'regular' | 'fasting'
   const [openSection, setOpenSection] = useState('breakfast');
 
@@ -18,7 +27,7 @@ export default function MenuView({ profile, menuData, selected, onSelectMeal, on
 
   const { targetKcal, scale } = metrics;
 
-  // Суммируем КБЖУ выбранного рациона на день
+  // Суммируем КБЖУ вашего выбранного рациона на день
   const totals = MEAL_SECTIONS.reduce(
     (acc, sec) => {
       const list = menuData?.menu?.[sec.key] || [];
@@ -119,6 +128,26 @@ export default function MenuView({ profile, menuData, selected, onSelectMeal, on
             const activeDish = dishes.find((d) => Number(d.number) === activeNum);
             const isOpen = openSection === sec.key;
 
+            // Собираем блюда членов семьи, у которых включено подтягивание их выбора (useMemberMeals)
+            // и выбран отличный от вашего вариант приёма пищи
+            const familyOverrides = linkedMembers
+              .filter((m) => m.useMemberMeals)
+              .map((m) => {
+                const mDishNum = Number(m.memberSelected?.[sec.key]);
+                if (!mDishNum || mDishNum === activeNum) return null;
+                const mDish = dishes.find((d) => Number(d.number) === mDishNum);
+                if (!mDish) return null;
+                const mMetrics = calculateProfileMetrics(m.profile);
+                return {
+                  memberId: m.id,
+                  memberName: m.profile.name,
+                  dish: mDish,
+                  scale: mMetrics?.scale || 1,
+                  macros: scaleMacros(mDish, mMetrics?.scale || 1)
+                };
+              })
+              .filter(Boolean);
+
             return (
               <div
                 key={sec.key}
@@ -128,20 +157,47 @@ export default function MenuView({ profile, menuData, selected, onSelectMeal, on
                   onClick={() => setOpenSection(isOpen ? null : sec.key)}
                   className="w-full p-4 flex items-center justify-between text-left"
                 >
-                  <div className="pr-3">
-                    <div className="flex items-center gap-2">
+                  <div className="pr-3 space-y-1.5">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className={`w-2.5 h-2.5 rounded-full bg-linear-to-r ${sec.accent}`} />
                       <span className="font-bold text-slate-900 text-sm">{sec.label}</span>
                       <span className="text-[11px] text-slate-400">{sec.time}</span>
+                      {familyOverrides.length > 0 && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-lg">
+                          <Users className="w-3 h-3" /> +{familyOverrides.length} выбор семьи
+                        </span>
+                      )}
                     </div>
+
                     {activeDish ? (
-                      <p className="text-xs text-slate-600 mt-1 line-clamp-2 font-medium">
+                      <p className="text-xs text-slate-600 line-clamp-2 font-medium">
                         {scaleTextWeights(activeDish.title, scale)}
                       </p>
                     ) : (
-                      <p className="text-xs text-amber-600 mt-1">Нажмите, чтобы выбрать блюдо</p>
+                      <p className="text-xs text-amber-600">Нажмите, чтобы выбрать блюдо</p>
+                    )}
+
+                    {/* Подсвеченные плашки альтернативных блюд членов семьи в свёрнутой карточке */}
+                    {familyOverrides.length > 0 && (
+                      <div className="space-y-1 pt-0.5">
+                        {familyOverrides.map((ov) => (
+                          <div
+                            key={ov.memberId}
+                            className="bg-indigo-50/90 border border-indigo-200/80 rounded-xl px-2.5 py-1.5 text-[11px] text-indigo-950 flex items-center justify-between gap-2"
+                          >
+                            <span className="line-clamp-1">
+                              <b className="text-indigo-700">[{ov.memberName}]</b>{' '}
+                              {scaleTextWeights(ov.dish.title, ov.scale)}
+                            </span>
+                            <span className="text-[10px] font-bold text-indigo-700 shrink-0">
+                              {ov.macros.kcal} ккал
+                            </span>
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </div>
+
                   <div className="flex items-center gap-2 shrink-0">
                     {activeDish && (
                       <span className="text-xs font-bold bg-slate-100 text-slate-700 px-2.5 py-1 rounded-xl">
@@ -156,9 +212,52 @@ export default function MenuView({ profile, menuData, selected, onSelectMeal, on
 
                 {isOpen && (
                   <div className="border-t border-slate-100 px-3 py-2.5 space-y-2 bg-slate-50/60 max-h-96 overflow-y-auto">
+                    {/* Развёрнутые карточки блюд, выбранных членами семьи */}
+                    {familyOverrides.map((ov) => (
+                      <div
+                        key={`open_${ov.memberId}`}
+                        className="p-3 rounded-2xl bg-indigo-50/95 border border-indigo-300/80 shadow-xs space-y-1.5"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="inline-flex items-center gap-1 text-[11px] font-extrabold text-indigo-800 bg-indigo-100 px-2 py-0.5 rounded-lg">
+                            <Users className="w-3 h-3" /> [{ov.memberName}] — выбор участника
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              onSelectMeal(sec.key, ov.dish.number);
+                              setOpenSection(null);
+                            }}
+                            className="text-[10px] font-bold text-indigo-700 hover:text-indigo-900 underline"
+                          >
+                            Выбрать и себе
+                          </button>
+                        </div>
+                        <div className="text-xs font-bold text-indigo-950 leading-snug">
+                          {scaleTextWeights(ov.dish.title, ov.scale)}
+                        </div>
+                        {ov.dish.composition && (
+                          <div className="text-[11px] text-indigo-900/75 leading-relaxed">
+                            {scaleTextWeights(ov.dish.composition, ov.scale)}
+                          </div>
+                        )}
+                        <div className="flex items-center gap-2 text-[11px] text-indigo-800 pt-0.5">
+                          <span className="font-semibold">{ov.macros.kcal} ккал</span>
+                          <span>• Б {ov.macros.protein}г</span>
+                          <span>• Ж {ov.macros.fat}г</span>
+                          <span>• У {ov.macros.carbs}г</span>
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Список всех блюд для вашего выбора */}
                     {dishes.map((dish) => {
                       const isSelected = Number(dish.number) === activeNum;
                       const m = scaleMacros(dish, scale);
+                      const chosenByMembers = familyOverrides
+                        .filter((ov) => Number(ov.dish.number) === Number(dish.number))
+                        .map((ov) => ov.memberName);
+
                       return (
                         <button
                           key={dish.id}
@@ -169,12 +268,22 @@ export default function MenuView({ profile, menuData, selected, onSelectMeal, on
                           className={`w-full text-left p-3 rounded-2xl border transition flex items-start justify-between gap-3 ${
                             isSelected
                               ? 'bg-emerald-50/90 border-emerald-400 shadow-sm'
+                              : chosenByMembers.length > 0
+                              ? 'bg-indigo-50/50 border-indigo-200 hover:border-indigo-300'
                               : 'bg-white border-slate-200/70 hover:border-slate-300'
                           }`}
                         >
                           <div className="space-y-1">
-                            <div className="text-xs font-bold text-slate-900 leading-snug">
-                              {scaleTextWeights(dish.title, scale)}
+                            <div className="text-xs font-bold text-slate-900 leading-snug flex items-center gap-1.5 flex-wrap">
+                              <span>{scaleTextWeights(dish.title, scale)}</span>
+                              {chosenByMembers.map((name) => (
+                                <span
+                                  key={name}
+                                  className="text-[10px] font-bold bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded-md"
+                                >
+                                  [{name}]
+                                </span>
+                              ))}
                             </div>
                             {dish.composition && (
                               <div className="text-[11px] text-slate-500 leading-relaxed">
