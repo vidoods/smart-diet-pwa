@@ -11,6 +11,7 @@ import {
   ChevronRight,
   Scale
 } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 
 export default function WeightTracker({
   weightHistory = [],
@@ -20,6 +21,7 @@ export default function WeightTracker({
   onAddEntry,
   onDeleteEntry
 }) {
+  const { t, language } = useLanguage();
   const [isAdding, setIsAdding] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [newWeight, setNewWeight] = useState(currentWeight ? String(currentWeight) : '');
@@ -165,10 +167,10 @@ export default function WeightTracker({
           </div>
           <div>
             <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">
-              Динамика веса
+              {t('weight.title')}
             </h3>
             <p className="text-[11px] text-slate-500 dark:text-slate-400">
-              График и журнал прогресса
+              {t('weight.subtitle')}
             </p>
           </div>
         </div>
@@ -183,9 +185,9 @@ export default function WeightTracker({
           }}
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 border border-emerald-200/60 dark:border-emerald-800/50 px-3 py-1.5 rounded-xl transition"
         >
-          {isAdding ? 'Отмена' : (
+          {isAdding ? t('common.cancel') : (
             <>
-              <Plus className="w-3.5 h-3.5" /> Взвешивание
+              <Plus className="w-3.5 h-3.5" /> {t('weight.addRecord')}
             </>
           )}
         </button>
@@ -195,12 +197,12 @@ export default function WeightTracker({
       {isAdding && (
         <form onSubmit={handleSubmit} className="bg-slate-50 dark:bg-slate-800/60 rounded-2xl p-3.5 border border-slate-200/80 dark:border-slate-700/60 space-y-3">
           <div className="text-xs font-bold text-slate-900 dark:text-slate-200">
-            Записать вес
+            {t('weight.recordWeight')}
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="text-[10px] text-slate-500 dark:text-slate-400 block mb-1">
-                Вес (кг)
+                {t('weight.weightKg')}
               </label>
               <input
                 type="number"
@@ -215,7 +217,7 @@ export default function WeightTracker({
             </div>
             <div>
               <label className="text-[10px] text-slate-500 dark:text-slate-400 block mb-1">
-                Дата
+                {t('weight.date')}
               </label>
               <input
                 type="date"
@@ -229,11 +231,11 @@ export default function WeightTracker({
 
           <div>
             <label className="text-[10px] text-slate-500 dark:text-slate-400 block mb-1">
-              Заметка (необязательно)
+              {t('weight.note')}
             </label>
             <input
               type="text"
-              placeholder="Например: после тренировки, утро"
+              placeholder={t('weight.notePlaceholder')}
               value={newNote}
               onChange={(e) => setNewNote(e.target.value)}
               className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400"
@@ -246,13 +248,13 @@ export default function WeightTracker({
               onClick={() => setIsAdding(false)}
               className="px-3 py-1.5 text-xs text-slate-600 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-700 rounded-xl transition"
             >
-              Отмена
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
               className="px-4 py-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl shadow-xs transition"
             >
-              Сохранить
+              {t('common.save')}
             </button>
           </div>
         </form>
@@ -263,16 +265,16 @@ export default function WeightTracker({
         <div className="grid grid-cols-3 gap-2">
           <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-2.5 text-center border border-slate-100 dark:border-slate-800">
             <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-              Текущий
+              {t('weight.current')}
             </div>
             <div className="text-base font-extrabold text-slate-900 dark:text-slate-100 mt-0.5">
-              {stats.latestWeight} <span className="text-[11px] font-normal text-slate-500">кг</span>
+              {stats.latestWeight} <span className="text-[11px] font-normal text-slate-500">{t('common.kg')}</span>
             </div>
           </div>
 
           <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-2.5 text-center border border-slate-100 dark:border-slate-800">
             <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-              Динамика
+              {t('weight.dynamics')}
             </div>
             <div className="flex items-center justify-center gap-0.5 mt-0.5">
               {stats.totalDelta < 0 ? (
@@ -297,13 +299,13 @@ export default function WeightTracker({
                   </span>
                 </>
               )}
-              <span className="text-[11px] font-normal text-slate-500">кг</span>
+              <span className="text-[11px] font-normal text-slate-500">{t('common.kg')}</span>
             </div>
           </div>
 
           <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-2.5 text-center border border-slate-100 dark:border-slate-800">
             <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-              ИМТ
+              {t('weight.bmi')}
             </div>
             <div className="text-base font-extrabold text-slate-900 dark:text-slate-100 mt-0.5">
               {stats.currentBmi || '—'}
@@ -318,14 +320,14 @@ export default function WeightTracker({
           {/* Фильтры по времени */}
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
-              Период:
+              {t('weight.period')}
             </span>
             <div className="flex gap-1 bg-slate-100 dark:bg-slate-800/80 p-0.5 rounded-xl text-[11px]">
               {[
-                { id: '7d', label: '7д' },
-                { id: '30d', label: '30д' },
-                { id: '90d', label: '3мес' },
-                { id: 'all', label: 'Всё' }
+                { id: '7d', label: t('weight.range7d') },
+                { id: '30d', label: t('weight.range30d') },
+                { id: '90d', label: t('weight.range90d') },
+                { id: 'all', label: t('weight.rangeAll') }
               ].map((btn) => (
                 <button
                   key={btn.id}
@@ -482,16 +484,13 @@ export default function WeightTracker({
       ) : sortedHistory.length === 1 ? (
         <div className="bg-slate-50 dark:bg-slate-800/40 rounded-2xl p-4 text-center border border-slate-100 dark:border-slate-800">
           <p className="text-xs text-slate-600 dark:text-slate-300">
-            Записана 1 точка взвешивания ({sortedHistory[0].weight} кг).
-          </p>
-          <p className="text-[11px] text-slate-400 mt-1">
-            Добавьте еще хотя бы одно взвешивание, чтобы построить график динамики.
+            {t('weight.oneRecordHint')}
           </p>
         </div>
       ) : (
         <div className="bg-slate-50 dark:bg-slate-800/40 rounded-2xl p-6 text-center border border-slate-100 dark:border-slate-800">
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            История взвешиваний пуста.
+            {t('weight.emptyHint')}
           </p>
           <button
             type="button"
@@ -501,7 +500,7 @@ export default function WeightTracker({
             }}
             className="mt-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline"
           >
-            + Записать первое взвешивание
+            {t('weight.firstRecordBtn')}
           </button>
         </div>
       )}
@@ -515,13 +514,13 @@ export default function WeightTracker({
             className="w-full flex items-center justify-between py-1.5 px-1 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition group select-none"
           >
             <div className="flex items-center gap-2">
-              <span>История записей</span>
+              <span>{t('weight.historyTitle')}</span>
               <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-lg">
                 {sortedHistory.length}
               </span>
             </div>
             <div className="flex items-center gap-1 text-[11px] font-normal text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200">
-              <span>{isHistoryOpen ? 'Свернуть' : 'Развернуть'}</span>
+              <span>{isHistoryOpen ? t('common.collapse') : t('common.expand')}</span>
               <ChevronDown
                 className={`w-4 h-4 transition-transform duration-200 ${
                   isHistoryOpen ? 'rotate-180' : ''
@@ -539,10 +538,10 @@ export default function WeightTracker({
                 >
                   <div className="flex items-center gap-2 min-w-0">
                     <div className="font-bold text-slate-900 dark:text-slate-100 shrink-0">
-                      {entry.weight} кг
+                      {entry.weight} {t('common.kg')}
                     </div>
                     <div className="text-[11px] text-slate-400 shrink-0">
-                      {new Date(entry.date).toLocaleDateString('ru-RU', {
+                      {new Date(entry.date).toLocaleDateString(language === 'en' ? 'en-US' : language === 'uk' ? 'uk-UA' : 'ru-RU', {
                         day: 'numeric',
                         month: 'short'
                       })}

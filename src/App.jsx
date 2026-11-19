@@ -13,6 +13,7 @@ import { isProfileComplete } from './utils/dietEngine';
 import { useAuth } from './hooks/useAuth';
 import { useMenuData } from './hooks/useMenuData';
 import { useFamilySync } from './hooks/useFamilySync';
+import { useLanguage } from './context/LanguageContext';
 
 import OnboardingView from './components/OnboardingView';
 import MenuView from './components/MenuView';
@@ -23,6 +24,7 @@ import RulesView from './components/RulesView';
 export default function App() {
   const [activeTab, setActiveTab] = useState('menu'); // 'menu' | 'grocery' | 'rules' | 'profile'
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  const { t } = useLanguage();
 
   // 1. Авторизация
   const { user, authLoading, loginWithGoogle, logout } = useAuth();
@@ -64,7 +66,7 @@ export default function App() {
     return (
       <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center gap-3">
         <div className="w-10 h-10 border-4 border-emerald-400 border-t-transparent rounded-full animate-spin" />
-        <p className="text-xs text-slate-400">Загрузка данных...</p>
+        <p className="text-xs text-slate-400">{t('common.loading')}</p>
       </div>
     );
   }
@@ -78,16 +80,16 @@ export default function App() {
             <Sparkles className="w-8 h-8" />
           </div>
           <div className="space-y-2">
-            <h1 className="text-2xl font-extrabold tracking-tight">Smart Diet Calculator</h1>
+            <h1 className="text-2xl font-extrabold tracking-tight">{t('auth.title')}</h1>
             <p className="text-sm text-slate-300 leading-relaxed">
-              Персональный расчет порций, КБЖУ и умный семейный список покупок с работой без интернета.
+              {t('auth.subtitle')}
             </p>
           </div>
           <button
             onClick={loginWithGoogle}
             className="tap-spring w-full py-3.5 px-4 rounded-2xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-sm flex items-center justify-center gap-2.5 shadow-xl"
           >
-            <LogIn className="w-5 h-5 text-emerald-600" /> Войти через Google
+            <LogIn className="w-5 h-5 text-emerald-600" /> {t('auth.loginGoogle')}
           </button>
         </div>
       </div>
@@ -123,7 +125,7 @@ export default function App() {
         {/* Индикатор офлайн-режима */}
         {isOffline && (
           <div className="animate-accordion mb-3 bg-slate-800 dark:bg-slate-900 border border-transparent dark:border-slate-800 text-amber-300 text-xs font-semibold px-3.5 py-2 rounded-2xl flex items-center justify-center gap-2">
-            <WifiOff className="w-4 h-4" /> Офлайн-режим: изменения сохранятся и синхронизируются при появлении сети
+            <WifiOff className="w-4 h-4" /> {t('common.offlineNotice')}
           </div>
         )}
 
@@ -304,10 +306,10 @@ export default function App() {
       <nav className="fixed bottom-0 inset-x-0 bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border-t border-slate-200/80 dark:border-slate-850 dark:border-slate-800 z-40 transition-colors">
         <div className="max-w-lg mx-auto grid grid-cols-4 py-2 px-3 gap-1">
           {[
-            { id: 'menu', label: 'Меню', icon: Utensils },
-            { id: 'grocery', label: 'Покупки', icon: ShoppingBag },
-            { id: 'rules', label: 'Правила', icon: BookOpen },
-            { id: 'profile', label: 'Профиль', icon: Users }
+            { id: 'menu', label: t('nav.menu'), icon: Utensils },
+            { id: 'grocery', label: t('nav.grocery'), icon: ShoppingBag },
+            { id: 'rules', label: t('nav.rules'), icon: BookOpen },
+            { id: 'profile', label: t('nav.profile'), icon: Users }
           ].map((tab) => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
