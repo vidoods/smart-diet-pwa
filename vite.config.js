@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
-  base: '/smart-diet-pwa/',
+  base: '/',
   plugins: [
     react(),
     tailwindcss(),
