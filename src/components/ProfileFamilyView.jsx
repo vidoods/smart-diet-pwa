@@ -186,7 +186,10 @@ export default function ProfileFamilyView({
         </div>
       )}
 
-      {/* 4. График веса и отслеживание прогресса */}
+      {/* 4. Мои антропометрические параметры */}
+      <UserProfileForm profile={profile} onSaveProfile={onSaveProfile} />
+
+      {/* 5. График веса и отслеживание прогресса */}
       <WeightTracker
         weightHistory={weightHistory}
         currentWeight={profile?.weight}
@@ -194,9 +197,6 @@ export default function ProfileFamilyView({
         onAddEntry={onAddWeightEntry}
         onDeleteEntry={onDeleteWeightEntry}
       />
-
-      {/* 5. Мои антропометрические параметры */}
-      <UserProfileForm profile={profile} onSaveProfile={onSaveProfile} />
 
       {/* 5. Блок «Семья и совместные покупки» */}
       <FamilyMembersSection
