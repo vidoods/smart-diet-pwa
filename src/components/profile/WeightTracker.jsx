@@ -7,6 +7,7 @@ import {
   Trash2,
   Calendar,
   Sparkles,
+  ChevronDown,
   ChevronRight,
   Scale
 } from 'lucide-react';
@@ -20,6 +21,7 @@ export default function WeightTracker({
   onDeleteEntry
 }) {
   const [isAdding, setIsAdding] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [newWeight, setNewWeight] = useState(currentWeight ? String(currentWeight) : '');
   const [newDate, setNewDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [newNote, setNewNote] = useState('');
@@ -504,50 +506,66 @@ export default function WeightTracker({
         </div>
       )}
 
-      {/* Журнал последних записей */}
+      {/* Аккордеон журнала записей */}
       {sortedHistory.length > 0 && (
-        <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-          <div className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between">
-            <span>История записей</span>
-            <span className="text-[11px] font-normal text-slate-400">
-              Всего: {sortedHistory.length}
-            </span>
-          </div>
+        <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+          <button
+            type="button"
+            onClick={() => setIsHistoryOpen(!isHistoryOpen)}
+            className="w-full flex items-center justify-between py-1.5 px-1 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition group select-none"
+          >
+            <div className="flex items-center gap-2">
+              <span>История записей</span>
+              <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-lg">
+                {sortedHistory.length}
+              </span>
+            </div>
+            <div className="flex items-center gap-1 text-[11px] font-normal text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200">
+              <span>{isHistoryOpen ? 'Свернуть' : 'Развернуть'}</span>
+              <ChevronDown
+                className={`w-4 h-4 transition-transform duration-200 ${
+                  isHistoryOpen ? 'rotate-180' : ''
+                }`}
+              />
+            </div>
+          </button>
 
-          <div className="max-h-48 overflow-y-auto space-y-1.5 pr-1 divide-y divide-slate-100 dark:divide-slate-800/60">
-            {[...sortedHistory].reverse().map((entry) => (
-              <div
-                key={entry.id}
-                className="pt-1.5 flex items-center justify-between text-xs group"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="font-bold text-slate-900 dark:text-slate-100">
-                    {entry.weight} кг
-                  </div>
-                  <div className="text-[11px] text-slate-400">
-                    {new Date(entry.date).toLocaleDateString('ru-RU', {
-                      day: 'numeric',
-                      month: 'short'
-                    })}
-                  </div>
-                  {entry.note && (
-                    <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded-md truncate max-w-[120px]">
-                      {entry.note}
-                    </span>
-                  )}
-                </div>
-
-                <button
-                  type="button"
-                  title="Удалить запись"
-                  onClick={() => onDeleteEntry(entry.id)}
-                  className="opacity-40 group-hover:opacity-100 hover:text-rose-500 text-slate-400 p-1 transition"
+          {isHistoryOpen && (
+            <div className="mt-2 max-h-56 overflow-y-auto space-y-1.5 pr-1 divide-y divide-slate-100 dark:divide-slate-800/60 animate-accordion">
+              {[...sortedHistory].reverse().map((entry) => (
+                <div
+                  key={entry.id}
+                  className="pt-1.5 flex items-center justify-between text-xs group/item"
                 >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            ))}
-          </div>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="font-bold text-slate-900 dark:text-slate-100 shrink-0">
+                      {entry.weight} кг
+                    </div>
+                    <div className="text-[11px] text-slate-400 shrink-0">
+                      {new Date(entry.date).toLocaleDateString('ru-RU', {
+                        day: 'numeric',
+                        month: 'short'
+                      })}
+                    </div>
+                    {entry.note && (
+                      <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded-md truncate max-w-[130px]">
+                        {entry.note}
+                      </span>
+                    )}
+                  </div>
+
+                  <button
+                    type="button"
+                    title="Удалить запись"
+                    onClick={() => onDeleteEntry(entry.id)}
+                    className="opacity-40 group-hover/item:opacity-100 hover:text-rose-500 text-slate-400 p-1 transition shrink-0"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
