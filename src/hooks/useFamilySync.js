@@ -18,6 +18,7 @@ import { isProfileComplete } from '../utils/dietEngine';
 
 const DEFAULT_USER_DOC = {
   profile: null,
+  weightHistory: [],
   selected: { breakfast: 1, secondBreakfast: 1, lunch: 1, dinner: 1 },
   days: 3,
   checkedItems: {},

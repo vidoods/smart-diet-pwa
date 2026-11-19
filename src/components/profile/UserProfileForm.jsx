@@ -11,13 +11,19 @@ export default function UserProfileForm({ profile, onSaveProfile }) {
   const handleProfileSave = (e) => {
     e.preventDefault();
     if (!editProfile.name?.trim() || !editProfile.age || !editProfile.height || !editProfile.weight) return;
-    onSaveProfile({
-      ...editProfile,
-      name: editProfile.name.trim(),
-      age: Number(editProfile.age),
-      height: Number(editProfile.height),
-      weight: Number(editProfile.weight)
-    });
+    const nextWeight = Number(editProfile.weight);
+    const prevWeight = Number(profile.weight);
+
+    onSaveProfile(
+      {
+        ...editProfile,
+        name: editProfile.name.trim(),
+        age: Number(editProfile.age),
+        height: Number(editProfile.height),
+        weight: nextWeight
+      },
+      nextWeight !== prevWeight ? nextWeight : null
+    );
     setSavedNotice(true);
     setTimeout(() => setSavedNotice(false), 2500);
   };

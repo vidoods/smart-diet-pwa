@@ -99,7 +99,18 @@ export default function App() {
     return (
       <OnboardingView
         userEmail={user.email}
-        onSave={(newProfile) => saveUserPatch({ profile: newProfile })}
+        onSave={(newProfile) => {
+          const initialWeightEntry = {
+            id: `${Date.now()}_init`,
+            weight: Number(newProfile.weight),
+            date: new Date().toISOString().slice(0, 10),
+            note: 'Начальный вес'
+          };
+          saveUserPatch({
+            profile: newProfile,
+            weightHistory: [initialWeightEntry]
+          });
+        }}
       />
     );
   }
@@ -210,7 +221,56 @@ export default function App() {
             <ProfileFamilyView
               user={user}
               profile={userDoc.profile}
-              onSaveProfile={(updatedProfile) => saveUserPatch({ profile: updatedProfile })}
+              weightHistory={
+                userDoc.weightHistory && userDoc.weightHistory.length > 0
+                  ? userDoc.weightHistory
+                  : userDoc.profile?.weight
+                  ? [
+                      {
+                        id: 'init_legacy',
+                        weight: Number(userDoc.profile.weight),
+                        date: new Date().toISOString().slice(0, 10),
+                        note: 'Текущий вес'
+                      }
+                    ]
+                  : []
+              }
+              onAddWeightEntry={(newEntry) => {
+                const currentHistory = userDoc.weightHistory || [];
+                const updatedHistory = [...currentHistory, newEntry];
+                saveUserPatch({
+                  weightHistory: updatedHistory,
+                  profile: {
+                    ...userDoc.profile,
+                    weight: newEntry.weight
+                  }
+                });
+              }}
+              onDeleteWeightEntry={(id) => {
+                const currentHistory = userDoc.weightHistory || [];
+                const updatedHistory = currentHistory.filter((item) => item.id !== id);
+                saveUserPatch({ weightHistory: updatedHistory });
+              }}
+              onSaveProfile={(updatedProfile, weightChange) => {
+                const currentHistory = userDoc.weightHistory || [];
+                let updatedHistory = currentHistory;
+                if (weightChange !== null && weightChange !== undefined) {
+                  const todayStr = new Date().toISOString().slice(0, 10);
+                  updatedHistory = [
+                    ...currentHistory,
+                    {
+                      id: `${Date.now()}_prof`,
+                      weight: Number(weightChange),
+                      date: todayStr,
+                      note: 'Обновление профиля'
+                    }
+                  ];
+                }
+                saveUserPatch({
+                  profile: updatedProfile,
+                  weightHistory: updatedHistory
+                });
+              }}
               familyHost={userDoc.familyHost || null}
               allowHostMenuSync={Boolean(userDoc.allowHostMenuSync)}
               onToggleAllowHostMenuSync={(val) => saveUserPatch({ allowHostMenuSync: val })}

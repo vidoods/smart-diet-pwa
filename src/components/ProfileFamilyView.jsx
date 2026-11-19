@@ -1,6 +1,7 @@
 import React from 'react';
 import { User, LogOut, Users, DoorOpen, ShieldCheck, Check, ShieldOff, Sun, Moon, Laptop } from 'lucide-react';
 import UserProfileForm from './profile/UserProfileForm';
+import WeightTracker from './profile/WeightTracker';
 import FamilyMembersSection from './profile/FamilyMembersSection';
 import { useTheme } from '../context/ThemeContext';
 
@@ -8,6 +9,9 @@ export default function ProfileFamilyView({
   user,
   profile,
   onSaveProfile,
+  weightHistory = [],
+  onAddWeightEntry,
+  onDeleteWeightEntry,
   familyHost,
   allowHostMenuSync,
   onToggleAllowHostMenuSync,
@@ -182,7 +186,16 @@ export default function ProfileFamilyView({
         </div>
       )}
 
-      {/* 4. Мои антропометрические параметры */}
+      {/* 4. График веса и отслеживание прогресса */}
+      <WeightTracker
+        weightHistory={weightHistory}
+        currentWeight={profile?.weight}
+        height={profile?.height}
+        onAddEntry={onAddWeightEntry}
+        onDeleteEntry={onDeleteWeightEntry}
+      />
+
+      {/* 5. Мои антропометрические параметры */}
       <UserProfileForm profile={profile} onSaveProfile={onSaveProfile} />
 
       {/* 5. Блок «Семья и совместные покупки» */}
